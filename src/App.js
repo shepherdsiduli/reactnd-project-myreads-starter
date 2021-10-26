@@ -1,5 +1,5 @@
 import React from 'react'
-// import * as BooksAPI from './BooksAPI'
+import * as BooksAPI from './BooksAPI'
 import './App.css'
 
 class BooksApp extends React.Component {
@@ -10,10 +10,18 @@ class BooksApp extends React.Component {
      * users can use the browser's back and forward buttons to navigate between
      * pages, as well as provide a good URL they can bookmark and share.
      */
-    showSearchPage: false
+    showSearchPage: false,
+    searchedBooks: []
   }
 
   render() {
+
+    const onSearch = async (event) => {
+      const value = event.target.value
+      const books = await BooksAPI.search(value)
+      this.setState({searchedBooks: books})
+    }
+    console.log('searchedBooks', this.state.searchedBooks)
     return (
       <div className="app">
         {this.state.showSearchPage ? (
@@ -29,7 +37,12 @@ class BooksApp extends React.Component {
                   However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
                   you don't find a specific author or title. Every search is limited by search terms.
                 */}
-                <input type="text" placeholder="Search by title or author"/>
+                <input type="text" placeholder="Search by title or author" onChange={onSearch}/>
+                <div className="bookshelf-books">
+                    <ol className="books-grid">
+                     {this.state.searchedBooks.map(book => <BookItem key={book.id} thumbnail={book.imageLinks.thumbnail} title={book.title} authors={book.authors}/>)}
+                    </ol>
+                </div>
 
               </div>
             </div>
@@ -200,6 +213,33 @@ class BooksApp extends React.Component {
         )}
       </div>
     )
+  }
+}
+
+
+class BookItem extends React.Component{
+
+  render (){
+    const {thumbnail, title, authors} = this.props
+
+    return <li>
+    <div className="book">
+      <div className="book-top">
+        <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url(${thumbnail})`}}></div>
+        <div className="book-shelf-changer">
+          <select>
+            <option value="move" disabled>Move to...</option>
+            <option value="currentlyReading">Currently Reading</option>
+            <option value="wantToRead">Want to Read</option>
+            <option value="read">Read</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+      </div>
+      <div className="book-title">{title}</div>
+      <div className="book-authors">{authors && authors.join()}</div>
+    </div>
+  </li>
   }
 }
 
